@@ -36,7 +36,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    NotificationApi.init();
+    NotificationApi.init(initScheduled: true);
     listenNotifications();
 
   }
@@ -59,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
               'Main Page',
               style: Theme.of(context).textTheme.headline4,
             ),
-            TextButton(onPressed:()=>NotificationApi.showScheduledNotification(title:"Dinner Time",body:"Time is 8 pm",payload:"Wake up dude",scheduledDate: DateTime.now().add(const Duration(seconds:8))), child:const Text("scheduled"))
+            TextButton(onPressed:()=>NotificationApi.showScheduledNotificationDailyBases(title:"Dinner Time",body:"Time is 8 pm",payload:"Wake up dude",scheduledDate: DateTime.now().add(const Duration(seconds:8))), child:const Text("scheduled"))
           ],
         ),
       ),

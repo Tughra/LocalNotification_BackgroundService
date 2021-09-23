@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
 import '../notifications_api.dart';
 
 class FirstPage extends StatefulWidget {
@@ -20,12 +19,6 @@ class _FirstPageState extends State<FirstPage> with WidgetsBindingObserver {
     // TODO: implement initState
     super.initState();
     WidgetsBinding.instance?.addObserver(this);
-    var androidInitialize =
-        const AndroidInitializationSettings("@mipmap/ic_launcher");
-    var initializationSettings =
-        InitializationSettings(android: androidInitialize);
-    localNotificationsPlugin = FlutterLocalNotificationsPlugin();
-    localNotificationsPlugin.initialize(initializationSettings);
   }
 
   @override
