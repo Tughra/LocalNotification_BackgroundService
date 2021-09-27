@@ -1,3 +1,4 @@
+import 'package:app_lifecycle_notification/utils.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:rxdart/rxdart.dart';
@@ -11,12 +12,45 @@ class NotificationApi {
   static final onNotifications = BehaviorSubject<String?>();
 
   /// In Android our notification is links to a channel therefore we need to create channel
+  /// Whenever change details make sure that chancing the channel ID (channel Id 1 etc.)
   static Future notificationDetails() async {
     return const NotificationDetails(
         android: AndroidNotificationDetails(
-            "channelId", "channelName", "channelDescription",
-            importance: Importance.max),
+            "channel Id", "channelName", "channelDescription",
+           // importance: Importance.max ///if you don't want to show notification on app , take command line here.
+
+        ),
         iOS: IOSNotificationDetails());
+  }
+
+  static Future notificationDetailsWithBigPicture() async {
+    final largeIconPath=await Utils.downloadFile("https://techcrunch.com/wp-content/uploads/2021/08/pokemon-legends-arceus.jpeg?w=1390&crop=1", "bigPicture");
+    final largeLogoPath=await Utils.downloadFile("https://thumbs.dreamstime.com/z/esport-logo-pikachu-pokemon-football-club-better-your-to-famous-142112271.jpg", "bigLogo");
+
+    final styleInformation= BigPictureStyleInformation(
+      FilePathAndroidBitmap(largeIconPath),
+      largeIcon:FilePathAndroidBitmap(largeLogoPath)
+    );
+    return  NotificationDetails(
+        android: AndroidNotificationDetails(
+            "channelId", "channelName", "channelDescription",
+            importance: Importance.max,
+        styleInformation:styleInformation),
+        iOS: const IOSNotificationDetails());
+  }
+
+  static Future notificationDetailsWithSound() async {
+    const sound = "notification_sound.wav"; ///for android inside the res with new folder
+    ///in ios under Runnder with new folder and put sound there.
+    return  NotificationDetails(
+        android: AndroidNotificationDetails(
+          "channel Id", "channelName", "channelDescription",
+           importance: Importance.max, ///if you don't want to show notification on app , take command line here.
+          sound: RawResourceAndroidNotificationSound(sound.split(".").first)
+        ),
+        iOS:const IOSNotificationDetails(
+          sound: sound
+        ));
   }
 
   /// implementing functionality is ;
@@ -25,6 +59,11 @@ class NotificationApi {
     const ios = IOSInitializationSettings();
     const initializationSettings =
         InitializationSettings(android: android, iOS: ios);
+  /// When app is closed
+    final details= await _notifications.getNotificationAppLaunchDetails();
+    if(details != null && details.didNotificationLaunchApp){
+      onNotifications.add(details.payload);
+    }
 
     await _notifications.initialize(initializationSettings,
         onSelectNotification: (payload) async {
@@ -55,11 +94,12 @@ class NotificationApi {
       title,
       body,
       tz.TZDateTime.from(scheduledDate,tz.local),
-      await notificationDetails(),
+      await notificationDetailsWithBigPicture(),
       payload: payload,
       androidAllowWhileIdle: true,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
+
     );
 
     /// if we want to send notification daily bases wee need to put "matchDateTimeComponents: DateTimeComponents.time" in zonedSchedule method
@@ -72,13 +112,13 @@ class NotificationApi {
       String? title,
       String? body,
       String? payload,
-      required DateTime scheduledDate}) async {
+      required Time scheduledDate}) async {
     //scheduledDate mandatory
     return _notifications.zonedSchedule(
         id,
         title,
         body,
-        _scheduleWeekly( Time(00,38),days:[DateTime.monday,DateTime.friday]),///if you want specific day for notification
+        _scheduleWeekly(scheduledDate,days:[DateTime.monday,DateTime.friday]),///if you want specific day for notification
         ///you can add "days:[DateTime.monday,DateTime.tuesday]"
 
         /// We set notification at 8 am every morning
@@ -107,6 +147,16 @@ class NotificationApi {
     }
     return scheduledDate;
   }
+
+  static void cancel (int id)=>_notifications.cancel(id); /// cancel via specific id
+  static void cancelAll ()=>_notifications.cancelAll(); /// cancel all
 }
 
-/// NotificationApi.showScheduledNotificationDailyBases(scheduledDate: scheduledDate); metodu init state icerisinde cagırısak kendiliginden yarlanmıs olur
+/// NotificationApi.showScheduledNotificationDailyBases(scheduledDate: scheduledDate); metodu init state icerisinde cagırısak kendiliginden ayarlanmıs olur
+
+
+/// Ios installation : Add the following lines to the didFinishLaunchingWithOptions method in the AppDelegate.m/AppDelegate.swift file of your iOS project
+/// Objective-C:
+// if (@available(iOS 10.0, *)) {
+//   [UNUserNotificationCenter currentNotificationCenter].delegate = (id<UNUserNotificationCenterDelegate>) self;
+// }

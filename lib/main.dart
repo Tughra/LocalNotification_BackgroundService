@@ -1,5 +1,6 @@
 import 'package:app_lifecycle_notification/notifications_api.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'pages/first_page.dart';
 import 'package:timezone/data/latest.dart' as tz;
 void main() {
@@ -38,6 +39,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     NotificationApi.init(initScheduled: true);
     listenNotifications();
+    NotificationApi.showScheduledNotification(scheduledDate:DateTime.now().add(Duration(seconds:15)));
 
   }
 
@@ -59,13 +61,13 @@ class _MyHomePageState extends State<MyHomePage> {
               'Main Page',
               style: Theme.of(context).textTheme.headline4,
             ),
-            TextButton(onPressed:()=>NotificationApi.showScheduledNotificationDailyBases(title:"Dinner Time",body:"Time is 8 pm",payload:"Wake up dude",scheduledDate: DateTime.now().add(const Duration(seconds:8))), child:const Text("scheduled"))
+            TextButton(onPressed:()=>NotificationApi.showScheduledNotificationDailyBases(title:"Dinner Time",body:"Time is 8 pm",payload:"Wake up dude",scheduledDate:const Time(22,15)), child:const Text("scheduled"))
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: ()  =>
-        NotificationApi.showNotification(
+        onPressed: () async =>
+        await NotificationApi.showNotification(
         title: "Title", body: "Oww yeah", payload: "PayLoad Area")
     ,
         tooltip: 'Increment',
